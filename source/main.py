@@ -58,5 +58,5 @@ if __name__ == "__main__":
     title += str(file_name)
     plt.title(title)
     fig = plt.gcf()
-    fig.canvas.set_window_title(file_name)
+    fig.canvas.manager.set_window_title(file_name)
     plt.show()
