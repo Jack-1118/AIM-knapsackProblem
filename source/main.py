@@ -3,6 +3,7 @@ from bag import Bag
 from dna import Dna
 from input_handler import get_params
 from population import Population
+import pandas as pd
 
 if __name__ == "__main__":
     """Getting parameters from the given text file. 
@@ -10,6 +11,7 @@ if __name__ == "__main__":
     params, file_name = get_params()
     iter_number = params.get('iter_number')
     #print(params)
+
 
     """Genetic algorithm:
     """
@@ -38,6 +40,23 @@ if __name__ == "__main__":
     
     print('Final Population:', pop)
 
+    # Print the best solution and its fitness only
+    best_individual = max(pop.pop, key=lambda x: x.fitness())
+
+    # Prepare selected items with 'Index' starting from 1
+    selected_items = []
+    for idx, (bit, w, v) in enumerate(zip(best_individual.bits, params['item_weights'], params['item_values'])):
+        if bit == '1':
+            selected_items.append({'Index': idx + 1, 'Weight': w, 'Value': v})
+
+    # Add total weight and value as a summary row
+    df = pd.DataFrame(selected_items)
+    if not df.empty:
+        total_weight = df['Weight'].sum()
+        total_value = df['Value'].sum()
+        summary_row = pd.DataFrame([{'Index': 'Total', 'Weight': total_weight, 'Value': total_value}])
+        df = pd.concat([df, summary_row], ignore_index=True)
+
     """Creating the summaries for graph.
     """
     best_vals = [s[0] for s in summary]
@@ -59,4 +78,22 @@ if __name__ == "__main__":
     plt.title(title)
     fig = plt.gcf()
     fig.canvas.manager.set_window_title(file_name)
+
+    # Display the items in the best solution as a table in a pop-up window
+    if not df.empty:
+        fig_table, ax_table = plt.subplots(figsize=(6, len(df)*0.5+1))
+        ax_table.axis('off')
+        table = ax_table.table(
+            cellText=df.values,
+            colLabels=df.columns,
+            loc='center',
+            cellLoc='center',
+            colLoc='center',
+        )
+        table.auto_set_font_size(False)
+        table.set_fontsize(12)
+        table.scale(1, 1.5)
+        plt.title('Items in Best Solution')
+
+    # Show all figures at once
     plt.show()
